@@ -1,10 +1,20 @@
 import ROOT as r
+import sys,os
+
 r.gROOT.SetBatch()
 r.gStyle.SetOptStat(0)
 
-inputFile = r.TFile("output.root")
+if len(sys.argv) != 3:
+    print "Usage: python makeCumu.py <inputName> <outputDirName>"
 
-outputFile = r.TFile("cumuFile.root","RECREATE")
+inputFile = r.TFile(sys.argv[1])
+
+outputDir=sys.argv[2]
+
+if not os.path.exists(outputDir):
+    os.mkdir(outputDir)
+
+outputFile = r.TFile("cumuOutput.root","RECREATE")
 
 perJetHist = inputFile.Get("meanTime")
 perEventHist = inputFile.Get("meanTimeMax")
@@ -15,7 +25,7 @@ for hist in [perJetHist,perEventHist]:
     hist.GetXaxis().SetTitle("Time Delay Cut")
     tC = r.TCanvas()
     hist.Draw()
-    tC.SaveAs(hist.GetName()+".pdf")
+    tC.SaveAs(outputDir+"/"+hist.GetName()+".pdf")
     tC.Clear()
     totalN = hist.GetEntries()
     cumu = hist.GetCumulative(False)
@@ -27,6 +37,6 @@ for hist in [perJetHist,perEventHist]:
     sup.GetXaxis().SetRangeUser(0,400E-12)
     sup.GetYaxis().SetTitle("Background Suppression")
     tC.SetLogy()
-    tC.SaveAs(sup.GetName()+".pdf")
+    tC.SaveAs(outputDir+"/"+sup.GetName()+".pdf")
     tC.Clear()
 # outputFile.Close()
